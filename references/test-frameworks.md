@@ -48,6 +48,53 @@ looks out of date for it).
 | Real services in containers | `testcontainers-go` |
 | Table-driven tests | idiomatic stdlib pattern, no library needed |
 
+## Swift
+
+| Need | Use |
+|---|---|
+| Test runner | Swift Testing (`@Test`, Xcode 16+/Swift 6) or XCTest (established projects) |
+| Mocking/stubbing | protocol-based fakes; `Mocker` or `OHHTTPStubs` for URLSession |
+| Snapshots | `swift-snapshot-testing` (Point-Free) |
+| BDD-style | `Quick` + `Nimble` (only if the repo already uses them) |
+| UI | XCUITest |
+
+## Objective-C
+
+| Need | Use |
+|---|---|
+| Test runner | XCTest |
+| Mocking | `OCMock` |
+| HTTP stubbing | `OHHTTPStubs` |
+| Assertions | XCTest built-ins; `Expecta` only in legacy suites that already have it |
+
+## C
+
+| Need | Use |
+|---|---|
+| Test runner | `Unity` (+ `CMock`/`Ceedling` for embedded), `cmocka`, or `Check` |
+| Mocking | `CMock`, or cmocka's built-in mocks |
+| Sanitizers as testing | ASan/UBSan/valgrind wired into the test run |
+
+## C++
+
+| Need | Use |
+|---|---|
+| Test runner | GoogleTest, or `Catch2`/`doctest` (header-only, lighter) |
+| Mocking | GoogleMock |
+| Property-based | `rapidcheck` |
+| Benchmarks | `google/benchmark` |
+| Sanitizers as testing | ASan/UBSan/TSan wired into the test run |
+
+## Terraform / Terragrunt
+
+| Need | Use |
+|---|---|
+| Native tests | `terraform test` (1.6+) for module-level unit tests |
+| Integration tests | `Terratest` (Go) — also covers Terragrunt stacks |
+| Static analysis | `tflint`, `checkov`, `trivy` (absorbed tfsec) |
+| Plan assertions | `terraform plan` output checks / OPA `conftest` |
+| Cloud without cloud | `LocalStack` for AWS-backed modules |
+
 ## Ruby
 
 | Need | Use |
