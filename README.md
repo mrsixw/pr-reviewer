@@ -22,6 +22,9 @@ PR-only checks still apply before merging.
   (moto, responses, freezegun, Testcontainers, …) over hand-crafted mocks
 - **Style** — language idioms, lenient on dogma like 80-char lines
 - **Comments** — convoluted blocks explained, comments say *why* not *what*
+- **Spelling & grammar** — typos in identifiers and user-facing strings get
+  flagged hardest; comment/doc typos are nits; either English dialect is fine
+  if consistent
 - **Security basics** — secrets in the diff, obvious injection, disabled TLS
 - **Error handling** — swallowed exceptions, bare `except:`, missing cleanup
 - **PR size / atomicity** — flags unreviewably large or unrelated changes

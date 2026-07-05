@@ -1,6 +1,6 @@
 ---
 name: pr-reviewer
-description: Review a GitHub pull request or the local branch diff against Steve's code-review checklist (naming, lint, CI, PR description, tests, style, comments, security, error handling, PR size, dead code, DRY). Use when asked to review a PR, review branch changes, or give a pre-merge opinion. Given a PR number or URL, review that PR via gh; otherwise review the local branch diff.
+description: Review a GitHub pull request or the local branch diff against Steve's code-review checklist (naming, lint, CI, PR description, tests, style, comments, spelling, security, error handling, PR size, dead code, DRY). Use when asked to review a PR, review branch changes, or give a pre-merge opinion. Given a PR number or URL, review that PR via gh; otherwise review the local branch diff.
 ---
 
 # PR Reviewer — Steve style
@@ -139,6 +139,18 @@ reads fine, let it go.
   carry a comment explaining the **why**, not the what.
 - Flag comments that merely repeat the code (`# increment counter`), and
   comments the diff has made stale or wrong (worse than no comment).
+
+### Spelling & grammar (Should fix / Nit)
+
+- Typos in **identifiers and public API names** are Should fix — they
+  propagate into every call site and haunt the codebase forever
+  (`recieve`, `seperate`, `initalize`).
+- Typos and grammar slips in comments, docstrings, docs, log messages, and
+  the PR description are Nits — flag them, but briefly.
+- **User-facing strings** (UI text, error messages shown to end users) get the
+  Should-fix bar: those typos ship.
+- Match the dialect the codebase already uses (British vs American English);
+  don't flag consistent use of either.
 
 ### Security basics (Blocker)
 
