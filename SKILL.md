@@ -1,6 +1,6 @@
 ---
 name: pr-reviewer
-description: Review a GitHub pull request or the local branch diff against Steve's code-review checklist (naming, lint, CI, PR description, tests, style, comments, spelling, security, error handling, PR size, dead code, DRY). Use when asked to review a PR, review branch changes, or give a pre-merge opinion. Given a PR number or URL, review that PR via gh; otherwise review the local branch diff.
+description: Review a change request (GitHub PR, GitLab MR, or any forge's equivalent) or the local working-copy diff against Steve's code-review checklist (naming, lint, CI, description, tests, style, comments, spelling, security, error handling, size, dead code, DRY). Use when asked to review a PR/MR/change request, review branch changes, or give a pre-merge opinion. Given a change-request number or URL, review it via the forge's tooling; otherwise review the local diff. Works with git, hg, svn, and other VCSs.
 ---
 
 # PR Reviewer — Steve style
@@ -11,16 +11,25 @@ dogma is not.
 
 ## 1. Pick the target
 
-- **A PR number or URL was given** → PR mode. First confirm `gh auth status`
-  succeeds — if not, stop and tell the human to run `gh auth login` instead of
-  attempting the review. Then use `gh pr view <n>` for the description,
-  `gh pr diff <n>` for the diff, `gh pr checks <n>` for CI. If the PR is a
-  draft (`gh pr view <n> --json isDraft`), still review it but note the draft
-  status up front so expectations are set.
-- **No PR referenced** → local mode. Diff the current branch against the merge
-  base with the default branch. Resolve the base explicitly — do **not** trust
-  a bare `origin/HEAD`, which is often unset and fails silently inside command
-  substitution:
+"Change request" (CR) below means whatever the hosting forge calls it — a
+GitHub pull request, GitLab merge request, Gitea/Forgejo PR, Bitbucket PR,
+SourceForge merge request, or a patch series on a mailing list. Per-forge and
+per-VCS command equivalents live in [references/tools.md](references/tools.md);
+the examples inline use git + GitHub as the most common case.
+
+- **A CR number or URL was given** → CR mode. First confirm the forge's CLI or
+  API access is authenticated (e.g. `gh auth status`, `glab auth status`) — if
+  not, stop and tell the human how to log in instead of attempting the review.
+  Then fetch the CR's description, diff, and CI status through the forge's
+  tooling (e.g. `gh pr view/diff/checks`, `glab mr view/diff`, or the forge's
+  REST API where no CLI exists). If the CR is marked draft/WIP, still review
+  it but note the draft status up front so expectations are set.
+- **No CR referenced** → local mode. Diff the current branch/working copy
+  against its divergence point from the mainline, using whichever VCS the repo
+  uses (git, hg, bzr, svn, fossil — commands in
+  [references/tools.md](references/tools.md)). For git, resolve the base
+  explicitly — do **not** trust a bare `origin/HEAD`, which is often unset and
+  fails silently inside command substitution:
 
   ```bash
   base=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD \
@@ -32,8 +41,10 @@ dogma is not.
 
   Confirm `$base` is non-empty and `git merge-base HEAD "$base"` succeeds
   before diffing; if either fails, say so rather than reviewing a wrong or
-  empty diff. Include uncommitted changes in the review.
-- In local mode, skip the CI and PR-description checks — note that they were
+  empty diff. The same principle applies to every VCS: verify the base
+  resolved before trusting the diff. Include uncommitted changes in the
+  review.
+- In local mode, skip the CI and CR-description checks — note that they were
   skipped so the human knows they still apply before merging.
 
 ## 2. Gather context
@@ -45,8 +56,9 @@ Before judging anything, collect:
   (e.g. `pyproject.toml`, `ruff.toml`, `.eslintrc*`, `checkstyle.xml`,
   `.golangci.yml`, `Makefile`/`justfile`/`package.json` scripts, CI workflow
   files under `.github/workflows/`).
-- The PR template, if one exists (`.github/PULL_REQUEST_TEMPLATE*`,
-  `PULL_REQUEST_TEMPLATE*`, `docs/PULL_REQUEST_TEMPLATE*`).
+- The CR template, if one exists (`.github/PULL_REQUEST_TEMPLATE*`,
+  `PULL_REQUEST_TEMPLATE*`, `docs/PULL_REQUEST_TEMPLATE*`,
+  `.gitlab/merge_request_templates/`, or the forge's equivalent).
 - Enough surrounding code to judge changes in context — review the diff, but
   read the touched files where the diff alone is ambiguous.
 
@@ -54,7 +66,7 @@ Before judging anything, collect:
 
 Grade every finding into one of three tiers:
 
-- **Blocker** — would reject the PR: broken logic, failing/absent CI, missing
+- **Blocker** — would reject the CR: broken logic, failing/absent CI, missing
   tests for changed behaviour, secrets in the diff.
 - **Should fix** — expect it fixed before merge, but wouldn't die on the hill:
   lint violations, swallowed errors, misleading names, stale PR description.
@@ -84,29 +96,33 @@ against it:
 - Run the configured tools **locally on the changed files** (e.g.
   `ruff check`, `eslint`, `mypy`, `golangci-lint run`, `mvn checkstyle:check`)
   and report violations with file:line.
-- **PR mode caveat**: local tools see the checked-out working tree, not the PR.
-  Only run them if the working tree is clean and you have checked out the PR's
-  code (`gh pr checkout <n>`; return to the original branch afterwards). If
-  the working tree is dirty or checkout isn't possible, skip local analysis,
-  rely on CI, and say so.
-- In PR mode, **also** check CI lint jobs — a local pass with a red CI lint job
-  (or vice versa) is itself a finding.
+- **CR mode caveat**: local tools see the checked-out working copy, not the
+  CR. Only run them if the working copy is clean and you have checked out the
+  CR's code (`gh pr checkout <n>`, `glab mr checkout <n>`, or the VCS
+  equivalent; return to the original branch afterwards). If the working copy
+  is dirty or checkout isn't possible, skip local analysis, rely on CI, and
+  say so.
+- In CR mode, **also** check CI lint jobs — a local pass with a red CI lint
+  job (or vice versa) is itself a finding.
 - Respect the repo's config files; do not impose rules the repo hasn't adopted.
 - If tools can't run locally (missing deps, no environment), say so and rely on
   CI rather than guessing.
 
-### CI (Blocker) — PR mode only
+### CI (Blocker) — CR mode only
 
-`gh pr checks` must be green. Failing checks are a Blocker; pending checks mean
+The forge's checks (`gh pr checks`, `glab ci status`, pipeline status via the
+forge API) must be green. Failing checks are a Blocker; pending checks mean
 the review verdict is provisional — say so. No CI configured at all is worth a
 Should-fix note suggesting some.
 
-### PR description (Should fix) — PR mode only
+### CR description (Should fix) — CR mode only
 
 The description must be accurate and match the actual diff — flag descriptions
 that describe changes not present, or miss significant changes that are. If
-the repo has a PR template, the description should follow it, with sections
-actually filled in rather than left as boilerplate.
+the repo has a CR template (`.github/PULL_REQUEST_TEMPLATE*`,
+`.gitlab/merge_request_templates/`, or the forge's equivalent), the
+description should follow it, with sections actually filled in rather than
+left as boilerplate.
 
 ### Testing (Blocker when behaviour changed)
 
@@ -146,7 +162,7 @@ reads fine, let it go.
   propagate into every call site and haunt the codebase forever
   (`recieve`, `seperate`, `initalize`).
 - Typos and grammar slips in comments, docstrings, docs, log messages, and
-  the PR description are Nits — flag them, but briefly.
+  the CR description are Nits — flag them, but briefly.
 - **User-facing strings** (UI text, error messages shown to end users) get the
   Should-fix bar: those typos ship.
 - Match the dialect the codebase already uses (British vs American English);
@@ -165,9 +181,9 @@ Swallowed exceptions, bare `except:`, ignored error returns, missing cleanup
 belongs), errors caught and reduced to a log line where the caller needed to
 know.
 
-### PR size & atomicity (Should fix)
+### CR size & atomicity (Should fix)
 
-If the PR does several unrelated things or is too large to review honestly,
+If the CR does several unrelated things or is too large to review honestly,
 say so and suggest how to split it. Review what's there anyway — flagging size
 is not an excuse to skim.
 
@@ -198,20 +214,20 @@ Be specific and honest: if the change is good, say so briefly and don't
 manufacture findings to look thorough. If nothing survives, an approval with
 zero findings is a valid review.
 
-## 5. Posting to GitHub (PR mode)
+## 5. Posting the review (CR mode)
 
 Nothing gets posted without the human seeing it first — **no exceptions**:
 
 1. **Preview first, always.** Show the exact content that would be posted:
    the review summary/verdict, and every inline comment with its
-   `file:line` anchor and full body, formatted as it will appear on GitHub.
+   `file:line` anchor and full body, formatted as it will appear on the forge.
 2. **Wait for explicit approval.** Only post after the human confirms; apply
    any edits they ask for and re-show anything that changed materially. If
    they don't want it posted, the terminal review from section 4 stands on
    its own.
 3. **Post findings as inline comments**, anchored to the relevant diff line —
    not as one monolithic comment. Submit everything as a single review so it
-   arrives as one notification:
+   arrives as one notification. On GitHub:
 
    ```bash
    # event is APPROVE / REQUEST_CHANGES / COMMENT per the verdict
@@ -222,7 +238,13 @@ Nothing gets posted without the human seeing it first — **no exceptions**:
      -f 'comments[][side]=RIGHT' -f 'comments[][body]=<finding>' ...
    ```
 
+   Equivalents for GitLab, Gitea/Forgejo, Bitbucket, and others are in
+   [references/tools.md](references/tools.md). Where the forge has no inline
+   review support (SourceForge, plain patch/email workflows), fall back to a
+   single structured comment or a reply quoting the relevant hunks — still
+   previewed and approved first.
+
    Inline comments can only attach to lines present in the diff; findings
-   about untouched code, or repo-wide points (missing CI, PR size), go in the
+   about untouched code, or repo-wide points (missing CI, CR size), go in the
    review body instead. Prefix nits with "Nit:" in the comment body so the
    author can triage at a glance.

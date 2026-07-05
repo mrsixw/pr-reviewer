@@ -4,10 +4,14 @@ Reviews PRs, Steve style. A code-review skill for coding agents (Claude Code,
 agy/Antigravity) that checks a diff against the things Steve actually picks up
 in review, graded as **Blocker / Should fix / Nit**.
 
-Point it at a GitHub PR (number or URL) and it reviews the PR — diff, CI
-status, and description included — via the `gh` CLI. With no PR referenced it
-reviews the local branch diff against the default branch and tells you which
-PR-only checks still apply before merging.
+Point it at a change request (number or URL) and it reviews it — diff, CI
+status, and description included — via the forge's tooling. It isn't tied to
+GitHub: GitHub, GitLab, Gitea/Forgejo/Codeberg, Bitbucket, Azure DevOps,
+SourceForge, and even mailing-list patch workflows are covered, over git, hg,
+bzr, svn, or fossil (see
+[references/tools.md](references/tools.md)). With no change request referenced
+it reviews the local working-copy diff against the mainline and tells you
+which forge-only checks still apply before merging.
 
 ## What it checks
 
@@ -15,9 +19,9 @@ PR-only checks still apply before merging.
   would pause on, not every improvable one
 - **Lint / static analysis** — runs the repo's configured tools on the changed
   files *and* cross-checks CI lint jobs
-- **CI** — checks must be green (PR mode)
-- **PR description** — accurate, matches the diff, follows the repo's template
-  (PR mode)
+- **CI** — checks must be green (change-request mode)
+- **Description** — accurate, matches the diff, follows the repo's template
+  (change-request mode)
 - **Testing** — code changes need test changes; prefers mature frameworks
   (moto, responses, freezegun, Testcontainers, …) over hand-crafted mocks
 - **Style** — language idioms, lenient on dogma like 80-char lines
@@ -27,7 +31,7 @@ PR-only checks still apply before merging.
   if consistent
 - **Security basics** — secrets in the diff, obvious injection, disabled TLS
 - **Error handling** — swallowed exceptions, bare `except:`, missing cleanup
-- **PR size / atomicity** — flags unreviewably large or unrelated changes
+- **Size / atomicity** — flags unreviewably large or unrelated changes
 - **Dead code & debug leftovers** — commented-out blocks, stray prints
 - **DRY** — copy-paste duplication, tempered by the rule of three
 
@@ -70,16 +74,20 @@ The symlinks keep pointing at the repo, so a pull updates every agent at once.
 
 Ask your agent to review something:
 
-- `review PR 42` / `review https://github.com/owner/repo/pull/42` — full PR
-  review including CI and description
+- `review PR 42` / `review https://github.com/owner/repo/pull/42` /
+  `review MR 42` — full change-request review including CI and description
 - `review my changes` (on a feature branch) — local diff review
 
-When posting a review to GitHub, the skill always shows the full content
+When posting a review to the forge, the skill always shows the full content
 (verdict plus every inline comment) for approval before anything is posted,
 and findings land as inline comments on the relevant diff lines, submitted as
-a single review.
+a single review where the forge supports it.
 
 ## Requirements
 
-- [`gh`](https://cli.github.com/) authenticated, for PR mode
-- `git`, and whatever lint/test tooling the target repo configures
+- The forge's CLI or API access, authenticated, for change-request mode —
+  e.g. [`gh`](https://cli.github.com/) for GitHub,
+  [`glab`](https://gitlab.com/gitlab-org/cli) for GitLab, `tea` for
+  Gitea/Forgejo, or a REST token where no CLI exists
+- The repo's VCS (`git`, `hg`, `bzr`, `svn`, …) and whatever lint/test
+  tooling the target repo configures
