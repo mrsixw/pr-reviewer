@@ -197,3 +197,32 @@ Structure the review as:
 Be specific and honest: if the change is good, say so briefly and don't
 manufacture findings to look thorough. If nothing survives, an approval with
 zero findings is a valid review.
+
+## 5. Posting to GitHub (PR mode)
+
+Nothing gets posted without the human seeing it first — **no exceptions**:
+
+1. **Preview first, always.** Show the exact content that would be posted:
+   the review summary/verdict, and every inline comment with its
+   `file:line` anchor and full body, formatted as it will appear on GitHub.
+2. **Wait for explicit approval.** Only post after the human confirms; apply
+   any edits they ask for and re-show anything that changed materially. If
+   they don't want it posted, the terminal review from section 4 stands on
+   its own.
+3. **Post findings as inline comments**, anchored to the relevant diff line —
+   not as one monolithic comment. Submit everything as a single review so it
+   arrives as one notification:
+
+   ```bash
+   # event is APPROVE / REQUEST_CHANGES / COMMENT per the verdict
+   gh api repos/{owner}/{repo}/pulls/{n}/reviews \
+     -f body='<summary + any findings that have no diff anchor>' \
+     -f event='COMMENT' \
+     -f 'comments[][path]=<file>' -F 'comments[][line]=<line>' \
+     -f 'comments[][side]=RIGHT' -f 'comments[][body]=<finding>' ...
+   ```
+
+   Inline comments can only attach to lines present in the diff; findings
+   about untouched code, or repo-wide points (missing CI, PR size), go in the
+   review body instead. Prefix nits with "Nit:" in the comment body so the
+   author can triage at a glance.

@@ -74,6 +74,11 @@ Ask your agent to review something:
   review including CI and description
 - `review my changes` (on a feature branch) — local diff review
 
+When posting a review to GitHub, the skill always shows the full content
+(verdict plus every inline comment) for approval before anything is posted,
+and findings land as inline comments on the relevant diff lines, submitted as
+a single review.
+
 ## Requirements
 
 - [`gh`](https://cli.github.com/) authenticated, for PR mode
