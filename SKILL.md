@@ -1,6 +1,6 @@
 ---
 name: pr-reviewer
-description: Review a change request (GitHub PR, GitLab MR, or any forge's equivalent) or the local working-copy diff against Steve's code-review checklist (naming, lint, CI, description, tests, style, comments, spelling, security, error handling, size, dead code, DRY). Use when asked to review a PR/MR/change request, review branch changes, or give a pre-merge opinion. Given a change-request number or URL, review it via the forge's tooling; otherwise review the local diff. Works with git, hg, svn, and other VCSs.
+description: Review a change request (GitHub PR, GitLab MR, or any forge's equivalent) or the local working-copy diff against Steve's code-review checklist (naming, lint, CI, description, tests, style, comments, spelling, security, error handling, atomic file writes, size, dead code, DRY). Use when asked to review a PR/MR/change request, review branch changes, or give a pre-merge opinion. Given a change-request number or URL, review it via the forge's tooling; otherwise review the local diff. Works with git, hg, svn, and other VCSs.
 ---
 
 # PR Reviewer — Steve style
@@ -181,7 +181,19 @@ Swallowed exceptions, bare `except:`, ignored error returns, missing cleanup
 belongs), errors caught and reduced to a log line where the caller needed to
 know.
 
-### CR size & atomicity (Should fix)
+### File writes (Should fix)
+
+Code must not write important files in place — a crash, kill, or full disk
+mid-write leaves a truncated or corrupt file behind. Flag direct writes to
+config, state, data, or output files that other code (or a later run) reads.
+The pattern to demand: write to a temporary file **on the same filesystem**
+(same directory is the easy way), then atomically move it into place
+(`os.replace` in Python, `rename(2)` semantics generally — not a cross-device
+move, which is a copy and not atomic). Where durability matters, fsync before
+the rename. Use the language's tempfile facility (`tempfile.mkstemp`,
+`os.CreateTemp`, `Files.createTempFile`) rather than hand-rolled `.tmp`
+names. Be pragmatic: scratch files, logs, and append-only streams don't need
+this — files whose partial state would break something do.
 
 If the CR does several unrelated things or is too large to review honestly,
 say so and suggest how to split it. Review what's there anyway — flagging size

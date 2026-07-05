@@ -31,6 +31,8 @@ which forge-only checks still apply before merging.
   if consistent
 - **Security basics** — secrets in the diff, obvious injection, disabled TLS
 - **Error handling** — swallowed exceptions, bare `except:`, missing cleanup
+- **File writes** — no in-place writes of files that matter; write a temp
+  copy and atomically move it into place
 - **Size / atomicity** — flags unreviewably large or unrelated changes
 - **Dead code & debug leftovers** — commented-out blocks, stray prints
 - **DRY** — copy-paste duplication, tempered by the rule of three
