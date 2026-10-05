@@ -42,32 +42,32 @@ list per language is in [references/test-frameworks.md](references/test-framewor
 
 ## Installation
 
-The repo is wired into each agent by symlinking it into that agent's global
-skills directory. Clone once, then either run the installer:
+Clone the repo, then symlink it into the shared skills directory that each
+agent reads:
 
 ```bash
-git clone https://github.com/mrsixw/pr-reviewer.git "$HOME/git/pr-reviewer"
-"$HOME/git/pr-reviewer/install.sh"
+git clone https://github.com/mrsixw/pr-reviewer.git \
+  "$HOME/git_repos/pr-reviewer"
+ln -sfn "$HOME/git_repos/pr-reviewer" "$HOME/.agents/skills/pr-reviewer"
 ```
 
-…or create the symlinks by hand:
+Agents that read a directory of skills — Claude Code via `~/.claude/skills`,
+Antigravity CLI via `~/.gemini/antigravity-cli/skills` — pick the skill up
+once that directory is itself a symlink to `~/.agents/skills`. Agents that
+link each skill individually, such as Codex via `~/.codex/skills`, need one
+symlink per skill:
 
 ```bash
-# Claude Code
-ln -sfn "$HOME/git/pr-reviewer" "$HOME/.claude/skills/pr-reviewer"
-
-# agy (Antigravity CLI)
-ln -sfn "$HOME/git/pr-reviewer" "$HOME/.gemini/config/skills/pr-reviewer"
+ln -sfn "$HOME/git_repos/pr-reviewer" "$HOME/.codex/skills/pr-reviewer"
 ```
 
-Both agents resolve the symlink to the same working copy, so there is exactly
-one copy of the skill to maintain. To add another agent, append its skills
-directory to `SKILL_DIRS` in [install.sh](install.sh) and re-run it.
+Every agent resolves to the same working copy, so there is exactly one copy of
+the skill to maintain.
 
 ## Updating
 
 ```bash
-git -C "$HOME/git/pr-reviewer" pull --ff-only
+git -C "$HOME/git_repos/pr-reviewer" pull --ff-only
 ```
 
 The symlinks keep pointing at the repo, so a pull updates every agent at once.

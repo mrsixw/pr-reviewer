@@ -1,0 +1,6 @@
+interface:
+  display_name: "PR Reviewer"
+  short_description: "Review change requests, Steve style"
+  default_prompt: "Use $pr-reviewer to review this change request."
+policy:
+  allow_implicit_invocation: false
