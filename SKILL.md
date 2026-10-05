@@ -9,6 +9,19 @@ Review code changes the way Steve would: pragmatic, idiom-aware, and focused on
 things that actually matter. Tests and correctness are non-negotiable; style
 dogma is not.
 
+## 0. What this skill owns
+
+`standards-spec-review` is the generic local core for the standards and
+specification axes. This skill is the forge-specific wrapper around it: it owns
+change-request access, the CI and description checks, Steve's house checklist
+below, severity tiering, and publishing. Follow the core for how to pin the
+review boundary and trace requirements, and report its findings through the
+tiers in section 3.
+
+For the testing check, follow `boundary-testing` in review mode. It owns which
+boundary a test should drive and which external systems to fake; this skill
+keeps the house rule that changed behaviour must come with test changes.
+
 ## 1. Pick the target
 
 "Change request" (CR) below means whatever the hosting forge calls it — a
@@ -132,14 +145,14 @@ left as boilerplate.
   actually exercising the code.
 - If the repo has no tests for the touched area, suggest specific ones where
   applicable.
-- Prefer mature, well-known frameworks that do the heavy lifting over
-  hand-crafted mocks — e.g. `moto`, `responses`/`requests-mock`, `freezegun`
-  for Python. Consult [references/test-frameworks.md](references/test-frameworks.md)
-  for the curated list per language — it lives alongside this SKILL.md in the
-  skill's own directory, not in the repo under review. If the stack in the diff isn't covered
-  there, search the web for a mature, well-rated option before recommending
-  anything. Flag hand-rolled mock scaffolding where a standard library would
-  make the tests cleaner.
+- `boundary-testing` owns the rule for what a test should drive and which
+  external systems to fake, and its own table covers Python. Use
+  [references/test-frameworks.md](references/test-frameworks.md) to extend that
+  rule to the other languages it does not cover — it lives alongside this
+  SKILL.md in the skill's own directory, not in the repo under review. If the
+  stack in the diff appears in neither, search the web for a mature,
+  well-rated option before recommending anything. Flag hand-rolled mock
+  scaffolding where a standard library would make the tests cleaner.
 
 ### Style (Nit)
 
