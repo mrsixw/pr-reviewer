@@ -17,6 +17,9 @@ which forge-only checks still apply before merging.
 
 - **Naming** — meaningful, language-idiomatic names; flags names a reader
   would pause on, not every improvable one
+- **Magic numbers** — bare exit codes, status codes, timeouts and thresholds
+  become named constants; a Blocker when the same literal must agree across
+  files, such as a script's exit and the CI check that reads it
 - **Lint / static analysis** — runs the repo's configured tools on the changed
   files *and* cross-checks CI lint jobs
 - **CI** — checks must be green (change-request mode)
