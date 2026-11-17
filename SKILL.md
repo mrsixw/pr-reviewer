@@ -1,6 +1,6 @@
 ---
 name: pr-reviewer
-description: Review a change request (GitHub PR, GitLab MR, or any forge's equivalent) or the local working-copy diff against Steve's code-review checklist (naming, lint, CI, description, tests, style, comments, spelling, security, error handling, atomic file writes, size, dead code, DRY). Use when asked to review a PR/MR/change request, review branch changes, or give a pre-merge opinion. Given a change-request number or URL, review it via the forge's tooling; otherwise review the local diff. Works with git, hg, svn, and other VCSs.
+description: Review a change request (GitHub PR, GitLab MR, or any forge's equivalent) or the local working-copy diff against Steve's code-review checklist (naming, magic numbers, lint, CI, description, tests, style, comments, spelling, security, error handling, atomic file writes, size, dead code, DRY). Use when asked to review a PR/MR/change request, review branch changes, or give a pre-merge opinion. Given a change-request number or URL, review it via the forge's tooling; otherwise review the local diff. Works with git, hg, svn, and other VCSs.
 ---
 
 # PR Reviewer — Steve style
@@ -100,6 +100,27 @@ over-abbreviate, or say nothing (`data2`, `tmp`, `handleStuff`, `mgr`). Stay
 silent on names that are merely improvable — do not carpet the review with
 naming nits. `i`/`j` are fine for simple loop counters; single letters are fine
 where convention blesses them (`e` in a short except clause, `k, v` over items).
+
+### Magic numbers (Should fix; Blocker when values must agree)
+
+Steve's pet hate, so always check. Flag any bare literal whose meaning a reader
+has to guess or look up: exit codes, HTTP or status codes, timeouts, retry
+counts, thresholds, sizes, offsets, and magic strings such as states or mode
+names. Ask for a named constant defined once, in the language's idiom: shell
+`readonly NAME=3`, Python a module-level `UPPER_CASE` (`Final`, or an `IntEnum`
+for a family of codes), JS/TS `const`, and so on.
+
+- **Blocker** when the same literal has to agree in more than one place, such
+  as a script that `exit 3`s and a CI workflow that checks `-eq 3`, or a
+  producer and consumer that each spell out the same status string. They drift
+  apart silently. Ask for one definition that every side reads (a sourced
+  `exit_codes.sh`, a shared constants module).
+- Also flag a named constant that is defined and then bypassed with the bare
+  value elsewhere in the diff.
+- **Not magic:** `0` and `1` as plain counting or identity values, idiomatic
+  shell `return 0`/`return 1` in a yes/no function, and test data where the
+  literal is the example under test. Asserting against a contract (exit
+  status, HTTP code) is not test data: use the code's named constant.
 
 ### Lint & static analysis (Should fix; Blocker if CI enforces it)
 
